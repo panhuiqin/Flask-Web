@@ -1,0 +1,16 @@
+# pipreqs . --encoding=utf8 --force    强制生成依赖文件
+# flask==1.1.2;
+# html-testRunner==1.2.1      # 本地代码，修改版本
+# axios==0.26.1   2.11.3            # 本地文件
+escape==1.1
+flask==1.1.2
+requests==2.20.1
+sheen==0.1.2
+redis==3.5.3
+PyMySQL==1.0.2
+itsdangerous==2.0.1
+Jinja2==3.0.3
+werkzeug==0.16.1
+moment==0.12.1
+
+

@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>公司自动化用例维护</title>
+</head>
+<body>
+<div style="height: 150px;background-color: #86a5f3; ">
+    <div style="height: 100px;display: flex;align-items: center ">
+        <div style="color: black; margin-left: 10px; margin-right: 1px">项目名称：</div>
+        <select id="select_project" style="width: 170px">
+        </select>
+        <div style="color: black; margin-left: 100px; margin-right: 1px">是否需要用例维护：</div>
+        <select id="select_http" style="width: 170px">
+        </select>
+        <div style="color: black; margin-left: 100px; margin-right: 1px">接口路径：</div>
+        <input id="input_url" style="color: #4098c8;margin-right: 1px;width: 170px;height: 25px;color: red;" type="text"
+               name="user" placeholder="接口路径"/>
+
+        <div style="color: black; margin-left: 100px; margin-right: 1px">用例id：</div>
+        <input id="input_case" style="color: #4098c8;margin-right: 1px;width: 170px;height: 25px;color: red;"
+               type="text"
+               name="user" placeholder="用例id"/>
+
+        <div style="color: black; margin-left: 100px; margin-right: 1px">关联用例id：</div>
+        <input id="input_relate" style="color: #4098c8;margin-right: 1px;width: 170px;height: 25px;color: red;"
+               type="text"
+               name="user" placeholder="关联用例id"/>
+
+        <button id="select123" onclick="getTable_query()" style="height: 30px;width: 60px;margin-left: 10px;">查询
+        </button>
+
+
+    </div>
+
+    <div style="display: flex">
+        <button id="input_rule" onclick="DisplayRules()"
+                style="height: 30px;width: 200px;margin-left: 100px; color: #e02222 ; font-size: 15px">用例维护操作说明
+        </button>
+
+        <form style="height: 30px;margin-left: 100px; color: #e02222 ; font-size: 15px" action="" method="post"
+              enctype="multipart/form-data">
+            <input style="height: 30px;width: 200px;margin-left: 10px ; font-size: 18px" type="file" name="file">
+            <input style="height: 30px;margin-left: 10px;  font-size: 18px" type="submit"
+                   formaction="http://{{ host }}/test/FileUpload">
+        </form>
+
+        <button style="margin-left: 100px; font-size: 18px" onclick="showProDialog()">项目信息维护</button>
+
+    </div>
+
+
+</div>
+
+
+<dialog id="favDialog" style="width: 1000px; height: 500px; ">
+    <pre>
+<span style="color: #cc0000; font-size: 18px; font-weight: 800">1</span>、传参body里面有真正的随机数时，请填写为“这里是一个随机数”；
+<span style="color: #cc0000; font-size: 18px; font-weight: 800"></span>   传参body里面有随机电话号码时，请填写为“这里是一个随机电话号码”；
+<span style="color: #cc0000; font-size: 18px; font-weight: 800"></span>   传参body里面有随机汉字时，请填写为“这是一个随机汉字”；
+<span style="color: #cc0000; font-size: 18px; font-weight: 800"></span>   传参body里面有随机时间时，其随机时间为今年内到当前时间的随机取值，请填写为“这是一个随机时间”；
+<span style="color: #cc0000; font-size: 18px; font-weight: 800">2</span>、用例与用例有关联时，其用例维护格式为
+        <code>
+{
+	"level": "A",
+	"type": "1",
+	"contact": {
+		"1024": {
+			"inq（用例的参数）": "（inq接口返回的参数）",
+			"docName": "docName",
+			"sex": "sex"
+		},
+		"1025": {
+			"inq": "name",
+			"key1": "",
+			"key2": ""
+		}
+	}
+}
+        </code>
+
+<span style="color: #cc0000; font-size: 18px; font-weight: 800">备注</span>：level为本条执行用例等级，目前为依次根据A、B、C、D等26个字母进行等级划分，其中Z为不存在任何关联且无用例执行顺序的接口，
+        其用例等级必须为大写，必填；type为目前接口关联的类型，由于目前的接口流程，我们区分了单接口流程跟业务流程，其单接口流程
+        包含单一接口用例、以及普通接口关联用例其取值为1，其业务流程为整条业务链的流程其取值为2；data里面为：每一条关联用例的用
+        例编号，关联用例编号下为关联用例的相关参数名称：对应的接口返回的参数名称，当关联用例的参数名称跟接口返回的参数名称一样时，
+        填写一样就行了，这里为非必填。
+<span style="color: #cc0000; font-size: 18px; font-weight: 800">3</span>：新增接口传参的必填项跟非必填项的写法，其如下：
+   接口参数：{"doctorLiveId":"string flase"}、{"doctorLiveId":"string true"}，其false为非必填，true为必填项
+<span style="color: #cc0000; font-size: 18px; font-weight: 800">4</span>：断言规则，其如下：
+   正常对象格式{}，断言层数到第五层，超过层数当字符串处理
+    {
+        "contact": {
+            "data": {
+                "inq（用例的参数）": {
+                    "docName": "docName"
+                }
+            }
+        }
+    }
+    正常列表断言[],断言层数到第三层，超过层数当字符串处理
+    [
+	    {
+		    "corpId": "wwfad3d051efbfd545"
+	    }
+    ]
+<span style="color: #cc0000; font-size: 18px; font-weight: 800">5</span>、增加文件上传的格式支持，其步骤为先在页面上点击‘选择文件’按钮上传本地文件到服务器上，然后复制服务器上文件链接，在相关需要上传文件
+    的接口按照下面的格式进行填写
+    {
+        "file": [{
+                "file": "/app/file/1654073303项目推广费导入模版.xlsx"
+        }],
+        "data": {}
+    }
+    其中data为除了文件上传参数以外的其他参数；如果没有则不需要填写
+<span style="color: #cc0000; font-size: 18px; font-weight: 800">6</span>、出参是字符串的话，固定这种写法，key固定是，string_data {"string_data": "返回的字符串"}
+   入参是字符串的话，固定这种写法，key固定是，string_body {"string_body": "请求的字符串"}
+    </pre>
+
+    <button id="cancel" onclick="CloseDisplay()"
+            style="margin-left: 900px;margin-top: -19px; width: 80px; height: 40px">
+        关闭
+    </button>
+</dialog>
+
+<dialog id="run_case" style="width: 1000px; height: 570px; ">
+    <div id="run_case_url">
+        接口：
+    </div>
+    <div id="run_case_caseTitle">
+        用例标题：
+    </div>
+    <label for="assertionResults"></label><textarea id="assertionResults"
+                                                    style="width: 44%;height: 450px; font-size: 14px;" type="text"
+                                                    name="user">入参</textarea>
+    <label for="outputResults"></label><textarea id="outputResults" style="width: 54%;height: 450px; font-size: 14px;"
+                                                 type="text/html" name="user"
+                                                 readonly="readonly">运行结果：</textarea>
+
+    <div style="display: flex">
+        <button id="run_123"
+                style="margin-left: 827px;margin-top: 0; width: 80px; height: 40px">
+            运行
+        </button>
+
+        <button id="cancel" onclick="CloseDisplay_case()"
+                style="margin-top: 0; width: 80px; margin-left: 10px; height: 40px">
+            关闭
+        </button>
+    </div>
+
+
+</dialog >
+
+{#项目信息新增/编辑dialog#}
+<dialog id="pro_dialog" style="width: 1000px; height: 570px;font-size: 16px ">
+    项目信息维护<br>
+    <form>
+        请选择你的操作<input type="radio" name="handle" value="0" checked="true" style="margin-left: 20px;margin-bottom: 10px" onchange="addOrEditDialog(0)">新增   <input type="radio" name="handle" value="1" onchange="addOrEditDialog(1)">修改<br>
+        <span style="color: #f60606">*</span>项目名称
+{#        新增展示 项目名称文本输入,校验唯一#}
+        <input id="proName_text" type="text" style="margin-left: 15px;margin-bottom: 10px">
+{#        编辑展示 已有项目名称,项目名称不可编辑#}
+        <select id="proName_sel" hidden="true" style="margin-left: 20px;margin-bottom: 10px" onchange="queryProInfo()"></select><br>
+        <span style="color: #f60606">*</span>项目说明<input id="proDeclare" type="text" style="margin-left: 20px;margin-bottom: 10px"><br>
+        <span style="vertical-align: 50px">请求头</span><textarea id="reqHeader" style="margin-left: 40px;margin-bottom: 10px" ></textarea><br>
+        <span style="vertical-align: 50px">请求地址</span><textarea id="reqUrl"  style="margin-left: 25px;margin-bottom: 10px" ></textarea><br>
+        请求类型<input id="reqType" type="radio" name="requestType" value="0" checked="true" style="margin-left: 25px;margin-bottom: 10px">GET <input type="radio" name="requestType" value="1" >POST<br>
+        认证方式<select id="authType" style="margin-left: 25px;margin-bottom: 10px"></select><br>
+        秘钥<input id="secretKey" type="text" style="margin-left: 55px;margin-bottom: 10px"><br>
+        <span style="vertical-align: 50px">请求体</span><textarea id="reqBody"  style="margin-left: 40px;margin-bottom: 10px" ></textarea>
+        <div style="display: flex">
+            <input id="pro_dialog_submit" type="submit" style="margin-left: 450px;height: 30px;font-size:18px">
+            <input id="pro_dialog_hide" type="button" onclick="hideProDialog()" style="margin-left: 30px;height: 30px;font-size:18px;float: left" value="关闭" >
+        </div>
+
+    </form>
+</dialog>
+
+
+<div>
+    <table id="datatable" border="1" width="100%" cellpadding="0" cellspacing="0" weight="30%">
+        <thead>
+        <tr>
+            <th style="height: 40px;width: 70px">用例id</th>
+            <th style="width: 250px">用例标题</th>
+            <th style="width: 100px">项目名</th>
+            {#            <th style="width: 70px">请求类型</th>#}
+            {#            <th style="width: 70px">请求方式</th>#}
+            <th style="width: 160px">接口名</th>
+            <th style="width: 250px">接口路径</th>
+            <th style="width: 250px">请求参数</th>
+            <th style="width: 200px">返回参数</th>
+            <th style="width: 100px">接口关联</th>
+            <th style="width: 200px">备注</th>
+            <th style="width: 170px">操作</th>
+        </tr>
+        </thead>
+        <tbody id="dataBody">
+        {% for result in results %}
+            <tr>
+                <td>{{ result[1] }}</td>
+                <td>{{ result[1] }}</td>
+                {#                <td>{{ result[2] }}</td>#}
+                {#                <td>{{ result[3] }}</td>#}
+                <td>{{ result[4] }}</td>
+                <td>{{ result[5] }}</td>
+                <td>{{ result[5] }}</td>
+                <td>{{ result[6] }}</td>
+                <td>
+                    <div class="flex_height">
+                        {{ result[7] }}
+                    </div>
+                </td>
+                <td>
+                    <div class="flex_height">
+                        {{ result[8] }}
+                    </div>
+                </td>
+                <td>
+                    <div class="flex_height">
+                        {{ result[9] }}
+                    </div>
+                </td>
+                <td>
+                    <a>
+                        <button onclick="deleteRow({{ result[0] }})">删除</button>
+                    </a>
+                    <a href="http://{{ host }}/submitInsert?result={{ result[0] }}">
+                        <button>插入</button>
+                    </a>
+                    <a href="http://{{ host }}/submitUpdate?result={{ result[0] }}">
+                        <button>修改</button>
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+<div class="center_style">
+    <ul class="pagination" id="paging_num">
+    </ul>
+</div>
+
+</body>
+{#<script src="https://unpkg.com/axios/dist/axios.js"></script>#}
+<script type="text/javascript" src="../static/axios.js"></script>
+<script>
+    let projectName = document.getElementById('select_project')
+    let modify = document.getElementById('select_http')
+
+    let options = document.getElementById('select_project').options
+    let optionsHttp = document.getElementById('select_http').options
+    let datatable = document.getElementById('datatable')
+    let dataBody = document.getElementById('dataBody')
+
+    let dialog_id = document.getElementById("favDialog")
+    let runCase_dialog_id = document.getElementById("run_case")
+
+
+    let data1 = null;
+    let data2 = null;
+
+    let pageIndex_initial = 1;
+    let pageSize_initial = 20;
+
+    // 上面的请求也可以这样做
+    axios.get('http://{{ host }}/screeningConditions', {})
+        .then(response => {
+            if (response.data) {
+                let dataB = response.data.data.list
+                let dataA = ["是", "否"]
+                {#alert(dataA)#}
+                dataB.forEach(i => {
+                    options.add(new Option(i, i));
+                })
+                dataA.forEach(i => {
+                    optionsHttp.add(new Option(i, i));
+
+                })
+                let a = optionsHttp.value
+                let projectNameVal = sessionStorage.getItem("projectName");
+                let modifyVal = sessionStorage.getItem("modify");
+
+                projectName.value = projectNameVal ?? projectName.value
+                modify.value = !!modifyVal ? modifyVal : dataA[0]
+                getTable()
+            }
+        })
+        .catch(function (error) {
+            console.error(error)
+            options.add(new Option("异常", "js add"))
+            optionsHttp.add(new optionsHttp("异常", "js add"))
+        });
+
+
+    function getTable() {
+        let select1Index_value = document.getElementById("select_project").value
+        let select2Index_value = document.getElementById("select_http").value
+        let select3Index_value = document.getElementById("input_url").value
+        let select4Index_value = document.getElementById("input_case").value
+        let select5Index_value = document.getElementById("input_relate").value
+
+        sessionStorage.setItem('projectName', select1Index_value)
+        sessionStorage.setItem('modify', select2Index_value)
+        sessionStorage.setItem('apiPath', select3Index_value)
+        sessionStorage.setItem('apiCase', select4Index_value)
+        sessionStorage.setItem('apiRelate', select5Index_value)
+
+
+        let _that = this;
+        axios.post('http://{{ host }}/queryCaseInfo', {
+            appName: select1Index_value,
+            isChange: select2Index_value,
+            apiPath: select3Index_value,
+            apiCase: select4Index_value,
+            apiRelate: select5Index_value,
+            pageIndex: pageIndex_initial,
+            pageSize: pageSize_initial
+
+        }).then(res => {
+            _that.getTabeldata = res.data.rows;
+
+            let arrs = res.data.data.list
+            let paging_number = res.data.total
+            paging_method(paging_number)
+
+
+            console.log(arrs)
+
+
+            arrs.map(itme => {
+                let tr = document.createElement('tr')
+                itme.map(items => {
+                    let td = document.createElement('td')
+                    let div_style = document.createElement('div')
+                    div_style.innerHTML = items
+                    div_style.className = 'flex_height'
+                    div_style.title = items
+                    td.appendChild(div_style)
+                    tr.appendChild(td)
+                })
+
+                let editTd = document.createElement('td')
+                let deleteA = document.createElement('a')
+                let insertA = document.createElement('a')
+                let editA = document.createElement('a')
+                let runA = document.createElement('a')
+
+                let deleteBt = document.createElement('button')
+                deleteBt.innerHTML = '删除'
+                deleteBt.setAttribute('onClick', "deleteRow(" + itme[0] + ")")
+                deleteA.appendChild(deleteBt)
+                editTd.appendChild(deleteA)
+
+                insertA.href = 'http://{{ host }}/submitInsert?result=' + itme[0]
+                let insertBt = document.createElement('button')
+                insertBt.innerHTML = '插入'
+                insertA.appendChild(insertBt)
+                editTd.appendChild(insertA)
+
+                editA.href = 'http://{{ host }}/submitUpdate?result=' + itme[0]
+                let editBt = document.createElement('button')
+                editBt.innerHTML = '修改'
+                editA.appendChild(editBt)
+                editTd.appendChild(editA)
+
+
+                let runBt = document.createElement('button')
+                runBt.innerHTML = '运行'
+                runBt.setAttribute('onClick', "one_run(" + itme[0] + ")")
+                runA.appendChild(runBt)
+                editTd.appendChild(runA)
+
+
+                tr.appendChild(editTd)
+                document.getElementById('dataBody').appendChild(tr)
+            })
+
+        })
+
+
+        let select1Index = document.getElementById("select_project").selectedIndex
+        let select2Index = document.getElementById("select_http").selectedIndex
+        let trArry = dataBody.getElementsByTagName("tr")
+        let lem = trArry.length
+        {#debugger#}
+
+
+        for (let i = lem - 1; i >= 0; i--) {
+            dataBody.removeChild(trArry[i]);
+        }
+
+    }
+
+    function getTable_query() {
+        pageIndex_initial = 1
+        getTable()
+    }
+
+    function deleteData(index) {
+        axios.post('http://{{ host }}/submitDelete', {caseId: index})
+            .then(req => {
+                console.log(req.data)
+
+                if (req.data.code == '1') {
+                    {#getTable()#}
+                }
+            })
+    }
+
+    function deleteRow(index) {
+        if (confirm(`确认删除【${index}】?`)) {
+            deleteData(index)
+        }
+    }
+
+    function DisplayRules() {
+        {#console.log(dialog_id.close)#}
+        dialog_id.showModal();
+    }
+
+    function CloseDisplay() {
+        dialog_id.close();
+
+        let caseTitle = document.getElementById("run_case_url")
+        let run_case_caseTitle = document.getElementById("run_case_caseTitle")
+        let output_Results = document.getElementById("outputResults")
+        let assertion_Results = document.getElementById("assertionResults")
+        caseTitle.innerHTML = "接口："
+        run_case_caseTitle.innerHTML = "用例标题："
+        assertion_Results.innerHTML = "断言结果："
+        output_Results.innerHTML = "正在运行中，请稍等......"
+    }
+
+    function one_run(index) {
+        runCase_dialog_id.showModal()
+
+        let caseTitle = document.getElementById("run_case_url")
+        let run_case_caseTitle = document.getElementById("run_case_caseTitle")
+        let assertion_Results = document.getElementById("assertionResults")
+
+        let output_Results = document.getElementById("outputResults")
+        output_Results.value = "运行结果"
+
+        axios.post('http://{{ host }}/queryCaseAllInfo', {
+            caseId: index
+        })
+            .then(response => {
+                if (response.data) {
+                    let url_data = response.data.data["apiType"] + "://" + response.data.data["apiHost"] + response.data.data["apiPath"]
+                    let case_title = response.data.data["caseTitle"]
+                    let parameter = response.data.data["parameter"]
+
+                    caseTitle.innerHTML = "接口：" + url_data
+                    run_case_caseTitle.innerHTML = "用例标题：" + case_title
+                    assertion_Results.innerHTML = parameter
+
+                    if (parameter === '') {
+                        assertion_Results.value = parameter;
+                    } else assertion_Results.value = JSON.stringify(JSON.parse(parameter), null, "\t");
+                }
+            })
+        {#one_run_result_index = index#}
+        document.getElementById("run_123").onclick = () => one_run_result(index)
+    }
+
+
+    function one_run_result(index) {
+
+        console.log(index)
+        let caseTitle = document.getElementById("run_case_url")
+        let run_case_caseTitle = document.getElementById("run_case_caseTitle")
+        axios.post('http://{{ host }}/queryCaseAllInfo', {
+            caseId: index
+        })
+            .then(response => {
+                if (response.data) {
+                    let url_data = response.data.data["apiType"] + "://" + response.data.data["apiHost"] + response.data.data["apiPath"]
+                    let case_title = response.data.data["caseTitle"]
+
+                    caseTitle.innerHTML = "接口：" + url_data
+                    run_case_caseTitle.innerHTML = "用例标题：" + case_title
+                }
+            })
+
+        let output_Results = document.getElementById("outputResults")
+        let assertion_Results = document.getElementById("assertionResults")
+        assertion_Results.innerHTML = "断言结果："
+        output_Results.value = "正在运行中，请稍等......"
+        axios.post('http://{{ host }}/runTest', {
+            caseId: index
+        })
+            .then(req => {
+                if (req.data) {
+                    document.getElementById("outputResults").value = "运行url：\n" + req.data.url + "\n" + "运行结果：\n" + req.data.data
+                    assertion_Results.innerHTML = "断言结果：\n" + req.data.results
+                }
+            }).catch(err => {
+            alert("操作异常" + err)
+            console.error(err)
+        })
+    }
+
+    function CloseDisplay_case() {
+        runCase_dialog_id.close();
+    }
+
+    //20220615 feature:项目信息维护
+    let pro_dialog = document.getElementById("pro_dialog")
+    //展示项目信息弹窗
+    function showProDialog(){
+        pro_dialog.showModal();
+        proName_sel.add(new Option('请选择',null));
+        authType.add(new Option('请选择',null));
+        axios.get('http://{{ host }}/proInfo/queryProEnum').then(req=>{
+                    if(req.data){
+                        req.data.data.proName.forEach(i=>{
+                            proName_sel.add(new Option(i,i));
+                        })
+                        for(let [key,value] of Object.entries(req.data.data.authType)){
+                            authType.add(new Option(key,value))
+                        }
+                    }
+                })
+    }
+    //隐藏项目信息弹窗
+    function hideProDialog(){
+        pro_dialog.close();
+    }
+    function addOrEditDialog(flag){
+        let proName_text = document.getElementById("proName_text");
+        let proName_sel = document.getElementById("proName_sel");
+        let proDeclare = document.getElementById("proDeclare");
+        if(flag != null){
+            if(flag == 0){
+                proName_text.hidden = false;
+                proName_sel.hidden = true;
+                proDeclare.removeAttribute("readonly");
+            }
+            else if(flag == 1){
+                proName_text.hidden = true;
+                proName_sel.hidden = false;
+            }
+        }
+    }
+
+
+    function queryProInfo(){
+        let proName_sel = document.getElementById("proName_sel");
+        let index = proName_sel.selectedIndex;
+        let proName = proName_sel['options'][index].value
+        let proDeclare = document.getElementById('proDeclare')
+        let reqHeader = document.getElementById('reqHeader')
+        let reqUrl= document.getElementById('reqUrl')
+        let reqType = document.getElementById('reqType')
+        let authType = document.getElementById('authType')
+        let reqBody = document.getElementById('reqBody')
+        axios.post('http://{{ host }}/proInfo/queryProInfo',{proName:proName}).then(req=>{
+            if(req.data){
+                let proInfo = req.data.data
+                proDeclare.value = proInfo['proDeclare'];
+                proDeclare.setAttribute("readonly","readonly");
+                reqHeader.value = proInfo['reqHeader'];
+                reqUrl.value = proInfo['reqUrl'];
+                reqType.value = proInfo['reqType'];
+                authType.value = proInfo['authType'];
+                reqBody.value = proInfo['reqBody'];
+            }
+        })
+    }
+
+
+
+
+
+    function paging_method(index) {
+        let num = Math.ceil(index / 20)
+
+        let paging_num = document.getElementById('paging_num')
+        let pObjs = paging_num.childNodes
+        for (let i = pObjs.length - 1; i >= 0; i--) {
+            paging_num.removeChild(pObjs[i]);
+        }
+
+
+        for (let i = 1; i <= num; i++) {
+            let editTd = document.createElement('li')
+            let editTd_a = document.createElement('a')
+
+            if (i == pageIndex_initial) {
+                editTd_a.className = 'active'
+            }
+
+            {#editTd_a.id = 'click_a' + i#}
+
+            console.log(i)
+            editTd_a.onclick = () => {
+                {#alert(i)#}
+                pageIndex_initial = i
+                getTable()
+            }
+            editTd_a.innerHTML = i
+            editTd.appendChild(editTd_a)
+            paging_num.appendChild(editTd)
+
+        }
+
+
+        {#<li><a class="active" href="#">1</a></li>#}
+
+        console.log(paging_num)
+        console.log(pageIndex_initial)
+        pageIndex_initial = num
+    }
+
+</script>
+<style>
+    table {
+        table-layout: fixed;
+        word-break: break-all
+    }
+
+
+    table td {
+        height: 30px;
+        overflow: auto;
+    }
+
+    .flex_height {
+        height: 20px;
+        overflow: hidden;
+    }
+
+    select {
+        color: red;
+        margin-right: 10px;
+        font-size: 22px
+    }
+
+    div {
+        height: 30px;
+    {#background-color: #86a5f3;#}
+    }
+
+</style>
+
+<style>
+    ul.pagination {
+        display: inline-block;
+        padding: 0;
+        margin: 0;
+    }
+
+    ul.pagination li {
+        display: inline;
+    }
+
+    ul.pagination li a {
+        color: black;
+        float: left;
+        padding: 8px 16px;
+        text-decoration: none;
+        transition: background-color .3s;
+        border: 1px solid #ddd;
+    }
+
+    ul.pagination li a.active {
+        background-color: #86a5f3;
+        color: white;
+        border: 1px solid #86a5f3;
+    }
+
+    ul.pagination li a:hover:not(.active) {
+        background-color: #ddd;
+    }
+
+    div.center_style {
+        text-align: center;
+        margin-top: 36.5%;
+    }
+    dialog#pro_dialog form{
+       font-size: 16px;
+    }
+    dialog#pro_dialog form textarea{
+        width: 800px;
+        height: 80px;
+    }
+
+
+
+
+</style>
+
+</html>
+

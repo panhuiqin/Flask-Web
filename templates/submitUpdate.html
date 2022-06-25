@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>提交修改页面</title>
+</head>
+<body>
+<div style="height: 70px;display: flex;align-items: center;background-color: #86a5f3; ">
+
+    <button style="height: 40px;width: 60px" onclick="history.go(-1)">
+        返回
+    </button>
+
+</div>
+
+
+<div style="display: flex;align-items: center;background-color: #6cc8d4; ">
+    <div id="url_info" style="height: 50px;display: flex;align-items: center ">
+    </div>
+    <div style="height: 50px; margin-left: 50px;display: flex;align-items: center ">
+        接口备注：
+    </div>
+    <div id="remarks_info" style="height: 50px; margin-left: 1px;display: flex;align-items: center ">
+    </div>
+</div>
+
+
+<div id="case_title_all" style="height: 50px;display: flex;align-items: center;background-color: #e7ecec; ">
+    <div>用例标题：</div>
+    <textarea id="case_title" style="width: 95%;height: 26px; font-size: 20px; text-align: left " type="text"
+              name="user"></textarea>
+
+</div>
+
+<table id="datatable" border="1" width="100%" cellpadding="0" cellspacing="0" weight="30%">
+    <thead>
+    <tr>
+        <th style="height: 40px;width: 27%">入参(parameter)</th>
+        <th style="height: 40px;width: 5%">
+            <select id="parameter_type" style="width: 100%; height: 100%"></select>
+        </th>
+        <th style="width: 33%">出参(response)</th>
+        <th style="width: 33%">关联用例(info_Relate)</th>
+    </tr>
+    </thead>
+</table>
+
+{#<input id="submit_name" style="width: 921px;height: 400px" type="text" name="user" value="输入参数"/>#}
+<textarea id="submit_name" style="width: 32%;height: 350px" type="text" name="user" value="输入参数"></textarea>
+<!--起个名字为了在服务端进行处理-->
+{#<input id="submit_password" style="width: 921px;height: 400px;" type="text" name="password" value="输出参数"/><br/>#}
+<textarea id="submit_password" style="width: 33%;height: 350px;" type="text" name="password" value="输出参数"></textarea>
+<!--点击登录即可提交可以看到网站的后边添加上了user=..&password=...-->
+<textarea id="submit_relate" style="width: 33%;height: 350px;" type="text" name="password" value="输出参数"></textarea>
+<!--点击登录即可提交可以看到网站的后边添加上了user=..&password=...-->
+<button style="height: 50px;width: 80px" onclick="submit()">
+    保存用例
+</button>
+<button style="height: 50px;width: 80px" onclick="run_Results()">
+    运行
+</button>
+
+
+<table id="submit_relate" border="0" style="width: 100%;height: 230px;" name="runResults">
+    <thead>
+    <tr>
+        <td>
+            <label for="outputResults"></label>
+            <textarea id="outputResults" style="width: 74%;height: 240px; font-size: 14px;" type="text" name="user"
+                      readonly="readonly">运行结果：</textarea>
+            <label for="assertionResults"></label><textarea id="assertionResults"
+                                                            style="width: 24%;height: 240px; font-size: 25px;"
+                                                            type="text" name="user"
+                                                            readonly="readonly">断言结果：</textarea>
+        </td>
+
+    </tr>
+    </thead>
+</table>
+
+
+<div style="width: 100%"></div>
+</body>
+
+{#<script src="https://unpkg.com/axios/dist/axios.min.js"></script>#}
+<script type="text/javascript" src="../static/axios.js"></script>
+
+<script>
+    function isJSON(str) {
+        if (typeof str == 'string') {
+            try {
+                var obj = JSON.parse(str);
+                if (typeof obj == 'object' && obj) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (e) {
+                console.log('error：' + str + '!!!' + e);
+                return false;
+            }
+        } else
+            return false
+    }
+
+    let options = document.getElementById('submit_name').options
+    let optionsHttp = document.getElementById('submit_password').options
+
+    {#console.log(options)#}
+    axios.post('http://{{ host }}/queryCaseAllInfo', {
+        caseId: getQueryVariable('result')
+    })
+        .then(response => {
+            {#console.log("response = " + response)#}
+            let url_data = response.data.data["apiType"] + "://" + response.data.data["apiHost"] + response.data.data["apiPath"]
+            let parameter = response.data.data["parameter"]
+            let res = response.data.data["response"]
+            let Relate = response.data.data["relate"]
+            let remarks = response.data.data["remarks"]
+            let caseTitle = response.data.data["caseTitle"]
+            let parameter_type = response.data.data["parameter_type"]
+            let url_info = document.getElementById("url_info")
+            let remarks_info = document.getElementById("remarks_info")
+            let case_title = document.getElementById("case_title")
+            let parameterType = document.getElementById('parameter_type')
+
+            {#let parameterType_data = [{"id": 1, "name": "Json"}, {"id": 2, "name": "Text"}]#}
+            let parameterType_data = [{"id": 1, "name": "Json"}, {"id": 2, "name": "Text"}, {"id": 3, "name": "File"}]
+
+            url_info.innerHTML = url_data
+            remarks_info.innerHTML = remarks
+            case_title.innerHTML = caseTitle
+            parameterType_data.forEach(i => {
+                parameterType.add(new Option(i.name, i.id));
+            })
+            parameterType.value = parameter_type;
+
+            let input_A = document.getElementById("submit_name")
+            let input_B = document.getElementById("submit_password")
+
+            if (parameter === '') {
+                input_A.value = parameter;
+            } else input_A.value = JSON.stringify(JSON.parse(parameter), null, "\t");
+
+            if (res === '') {
+                input_B.value = res;
+            } else input_B.value = JSON.stringify(JSON.parse(res), null, "\t");
+
+            let info_Relate = document.getElementById("submit_relate")
+            info_Relate.value = JSON.stringify(JSON.parse(Relate), null, "\t");
+        })
+        .catch(function (error) {
+            console.error(error)
+            options.add(new Option("异常", "js add"))
+            optionsHttp.add(new optionsHttp("异常", "js add"))
+        })
+
+    function submit() {
+        console.log(getQueryVariable('result'))
+        let par = document.getElementById('submit_name').value
+        let res = document.getElementById('submit_password').value
+        let rel = document.getElementById('submit_relate').value
+        let title = document.getElementById('case_title').value
+        let parameterType = document.getElementById('parameter_type').value
+        if (!isJSON(par)) {
+            alert('入参 不是JSON')
+            return
+        } else if (!isJSON(res)) {
+            alert('出参 不是JSON')
+            return
+        } else if (!isJSON(rel)) {
+            alert('关联用例 不是JSON')
+            return
+        }
+
+        axios.post('http://{{ host }}/submitUpdateData', {
+            parameter: JSON.stringify(JSON.parse(par)),
+            response: JSON.stringify(JSON.parse(res)),
+            parameterType: parseInt(parameterType),
+            relate: JSON.stringify(JSON.parse(rel)),
+            caseTitle: title,
+            caseId: getQueryVariable('result')
+        }).then(res => {
+            if (res.data.code == 1) {
+                alert('修改成功')
+                history.go(-1)
+            }
+            console.error(res)
+        }).catch(err => {
+            alert("操作异常" + err)
+            console.error(err)
+        })
+    }
+
+
+    function run_Results() {
+        let par = document.getElementById('submit_name').value
+        let res = document.getElementById('submit_password').value
+        let rel = document.getElementById('submit_relate').value
+        let output_Results = document.getElementById("outputResults")
+        let assertion_Results = document.getElementById("assertionResults")
+        let parameterType = document.getElementById('parameter_type').value
+        if (!isJSON(par)) {
+            alert('入参 不是JSON')
+            return
+        } else if (!isJSON(res)) {
+            alert('出参 不是JSON')
+            return
+        }
+        assertion_Results.innerHTML = "断言结果："
+        output_Results.value = "正在运行中，请稍等......"
+
+        axios.post('http://{{ host }}/runTest', {
+            parameter: par,
+            response: res,
+            parameterType: parseInt(parameterType),
+            caseId: getQueryVariable('result')
+        }).then(res => {
+            if (res.data.code == 1) {
+                document.getElementById("outputResults").value = "运行url：\n" + res.data.url + "\n" + "运行结果：\n" + res.data.data
+                assertion_Results.innerHTML = "断言结果：\n" + res.data.results
+                {#history.go(-1)#}
+            }
+            console.error(res)
+        }).catch(err => {
+            alert("操作异常" + err)
+            console.error(err)
+        })
+    }
+
+
+    function getQueryVariable(variable) {
+        var query = window.location.search.substring(1);
+        var vars = query.split("&");
+        for (var i = 0; i < vars.length; i++) {
+            var pair = vars[i].split("=");
+            if (pair[0] == variable) {
+                return pair[1];
+            }
+        }
+        return (false);
+    }
+
+
+</script>
+
+<style>
+
+    select {
+        color: #f60606;
+        margin-right: 10px;
+        font-size: 22px
+    }
+</style>
+
+
+</html>
